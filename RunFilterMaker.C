@@ -23,6 +23,7 @@ void RunFilterMaker(string filelist, Int_t nFiles, string outfile, string config
   gSystem->Load("StDaqLib");
   gSystem->Load("StEmcRawMaker");
   gSystem->Load("StEmcADCtoEMaker");
+  gSystem->Load("StPicoEvent");
   gSystem->Load("StPreEclMaker");
   gSystem->Load("StEpcMaker");
 

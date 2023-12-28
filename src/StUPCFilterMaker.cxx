@@ -40,6 +40,7 @@
 #include "StUPCTrack.h"
 #include "StUPCBemcCluster.h"
 #include "StUPCVertex.h"
+#include "StUPCV0.h"
 #include "StUPCTofHit.h"
 
 #include "StRPEvent.h"
@@ -263,6 +264,169 @@ Int_t StUPCFilterMaker::Make()
   //fill structures with clusters and hits
   if( mBemcUtil->processEvent(mMuDst, mUPCEvent) ) mCounter->Fill( kBemc ); // events having BEMC clusters
 
+
+  //run over global tracks and store all none-primary tracks of interest.
+  double massPion = 0.13957061;
+  double massKaon =  0.497611;
+  double massProton = 0.93827;   
+  TVector3 vertex(0,0,0);
+  double beamline[4] = {0, 0, 0, 0};
+  std::vector<int> globalList;
+
+  TObjArray *trkArray = mMuDst->globalTracks();
+
+    for(Int_t itrk=0; itrk<trkArray->GetEntriesFast(); itrk++) {
+      StMuTrack *track1 = dynamic_cast<StMuTrack*>( trkArray->At(itrk) );
+      if( !track1 ) continue;
+      if ( track1->nHits()<15 ) continue;
+      if ( track1->pt()<0.15 ) continue;
+      if ( abs(track1->eta())>1.1 ) continue;
+
+      //TOF
+      const StMuBTofPidTraits &tofPid1 = track1->btofPidTraits();
+      Bool_t matchTof1 = tofPid1.matchFlag() != 0 ? kTRUE : kFALSE;
+
+      for(Int_t jtrk=itrk+1; jtrk<trkArray->GetEntriesFast(); jtrk++) {
+        StMuTrack *track2 = dynamic_cast<StMuTrack*>( trkArray->At(jtrk) );
+        if( !track2 ) continue;
+        if ( track2->pt()<0.15 ) continue; 
+        if ( abs(track2->eta())>1.1 ) continue;
+        //TOF
+        const StMuBTofPidTraits &tofPid2 = track2->btofPidTraits();
+        Bool_t matchTof2 = tofPid2.matchFlag() != 0 ? kTRUE : kFALSE;
+
+        if ( matchTof1 == kFALSE && matchTof2 == kFALSE ) continue;
+        if ( track1->charge()+track2->charge() != 0 ) continue;
+        if ( track2->nHits()<15 ) continue;
+
+        // check if pair is K0 
+        StUPCV0 K0L(track1,track2, massPion, massPion,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), true); 
+//        std::cout << "linear " << K0.dcaDaughters() << " " << K0.DCABeamLine() << " " << K0.pointingAngleHypo() << std::endl;
+        if ( K0L.dcaDaughters() > 150. ) continue;
+        bool V0Candidate = false;
+        StUPCV0 K0(track1,track2, massPion, massPion,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), false);
+//        std::cout << "helix " << K0.dcaDaughters() << " " << K0.DCABeamLine() << " " << K0.pointingAngleHypo()	<< std::endl;
+     
+        if ( K0.dcaDaughters() < 1.5 && K0.DCABeamLine() < 1.5 && K0.pointingAngleHypo()>0.925) {
+            if ( abs(K0.m()-0.495) < 0.035 ) { 
+//                std::cout << "K0 " << K0.decayLengthHypo() <<  std::endl;
+                V0Candidate = true;
+            }
+        // check if pair is Lambda/LambdaBar
+        StUPCV0 L01(track1,track2, massPion, massProton,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), false);
+       	    if ( abs(L01.m()-1.115) < 0.035 ) { 
+//              std::cout << "L01 " << L01.decayLengthHypo() <<  std::endl;
+                V0Candidate = true;
+            }
+        // check if pair is LambdaBar/Lambda
+        StUPCV0 L02(track1,track2, massProton, massPion,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), false);
+            if ( abs(L02.m()-1.115) < 0.035 ) {
+//              std::cout << "L02 " << L02.decayLengthHypo() <<  std::endl;
+                V0Candidate = true;
+            }
+            if ( V0Candidate ) {
+//              std::cout << "V0Candidate " << bool(track1->primaryTrack()==0) << " " <<  bool(track2->primaryTrack()==0) << " " 
+//                        << bool(std::find(globalList.begin(), globalList.end(), itrk) == globalList.end()) << " " 
+//                        << bool(std::find(globalList.begin(), globalList.end(), jtrk) == globalList.end()) << std::endl;
+
+             if(track1->primaryTrack()==0 && std::find(globalList.begin(), globalList.end(), itrk) == globalList.end()) {
+              StUPCTrack *upcTrack = mUPCEvent->addTrack();
+              upcTrack->setPtEtaPhi(track1->pt(), track1->eta(), track1->phi());
+              upcTrack->setCurvatureDipAnglePhase(track1->helix().curvature(),track1->helix().dipAngle(),track1->helix().phase());
+              TVector3 origin(track1->helix().origin().x(),track1->helix().origin().y(),track1->helix().origin().z());
+              upcTrack->setOrigin(origin);
+              upcTrack->setDcaXY( track1->dcaGlobal().perp() );
+              upcTrack->setDcaZ( track1->dcaGlobal().z() );
+              upcTrack->setCharge( track1->charge() );
+              upcTrack->setNhits( track1->nHits() );
+              upcTrack->setNhitsFit( track1->nHitsFit() );
+              upcTrack->setChi2( track1->chi2() );
+              upcTrack->setNhitsDEdx( track1->nHitsDedx() );
+              upcTrack->setDEdxSignal( track1->dEdx() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kElectron, track1->nSigmaElectron() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kPion, track1->nSigmaPion() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kKaon, track1->nSigmaKaon() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kProton, track1->nSigmaProton() );
+
+              upcTrack->setVertexId( -1 );
+
+              //BEMC
+              UInt_t clsId=0;
+              Double_t emcPhi=-999., emcEta=-999., emcPt=-999.;
+              Bool_t emcProj=kFALSE;
+              Float_t hitE=-999.;
+              Short_t nhitsBemc = mBemcUtil->matchBEMC(track1, emcPhi, emcEta, emcPt, emcProj, clsId, hitE);
+              Bool_t matchBemc = nhitsBemc > 0 ? kTRUE : kFALSE;
+
+              if( emcProj ) {
+               upcTrack->setFlag( StUPCTrack::kBemcProj );
+               upcTrack->setBemcPtEtaPhi(emcPt, emcEta, emcPhi);
+              }
+              if( matchBemc ) {
+               upcTrack->setFlag( StUPCTrack::kBemc );
+               upcTrack->setBemcPtEtaPhi(emcPt, emcEta, emcPhi);
+               upcTrack->setBemcClusterId(clsId);
+               upcTrack->setBemcHitE(hitE);
+              }
+              if( matchTof1 ) {
+               upcTrack->setFlag( StUPCTrack::kTof );
+               upcTrack->setTofTime( tofPid1.timeOfFlight() );
+               upcTrack->setTofPathLength( tofPid1.pathLength() );
+              }
+              globalList.push_back(itrk);
+             }
+             if(track2->primaryTrack()==0 && std::find(globalList.begin(), globalList.end(), jtrk) == globalList.end()) {
+              StUPCTrack *upcTrack = mUPCEvent->addTrack();
+              upcTrack->setPtEtaPhi(track2->pt(), track2->eta(), track2->phi());
+              upcTrack->setCurvatureDipAnglePhase(track2->helix().curvature(),track2->helix().dipAngle(),track2->helix().phase());
+              TVector3 origin(track2->helix().origin().x(),track2->helix().origin().y(),track2->helix().origin().z());
+              upcTrack->setOrigin(origin);
+              upcTrack->setDcaXY( track2->dcaGlobal().perp() );
+              upcTrack->setDcaZ( track2->dcaGlobal().z() );
+              upcTrack->setCharge( track2->charge() );
+              upcTrack->setNhits( track2->nHits() );
+              upcTrack->setNhitsFit( track2->nHitsFit() );
+              upcTrack->setChi2( track2->chi2() );
+              upcTrack->setNhitsDEdx( track2->nHitsDedx() );
+              upcTrack->setDEdxSignal( track2->dEdx() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kElectron, track2->nSigmaElectron() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kPion, track2->nSigmaPion() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kKaon, track2->nSigmaKaon() );
+              upcTrack->setNSigmasTPC( StUPCTrack::kProton, track2->nSigmaProton() );
+
+              upcTrack->setVertexId( -1 );
+
+              //BEMC
+              UInt_t clsId=0;
+              Double_t emcPhi=-999., emcEta=-999., emcPt=-999.;
+              Bool_t emcProj=kFALSE;
+              Float_t hitE=-999.;
+              Short_t nhitsBemc = mBemcUtil->matchBEMC(track2, emcPhi, emcEta, emcPt, emcProj, clsId, hitE);
+              Bool_t matchBemc = nhitsBemc > 0 ? kTRUE : kFALSE;
+
+
+              if( emcProj ) {
+               upcTrack->setFlag( StUPCTrack::kBemcProj );
+               upcTrack->setBemcPtEtaPhi(emcPt, emcEta, emcPhi);
+              }
+              if( matchBemc ) {
+               upcTrack->setFlag( StUPCTrack::kBemc );
+               upcTrack->setBemcPtEtaPhi(emcPt, emcEta, emcPhi);
+               upcTrack->setBemcClusterId(clsId);
+               upcTrack->setBemcHitE(hitE);
+              }
+              if( matchTof2 ) {
+               upcTrack->setFlag( StUPCTrack::kTof );
+               upcTrack->setTofTime( tofPid2.timeOfFlight() );
+               upcTrack->setTofPathLength( tofPid2.pathLength() );
+              }
+              globalList.push_back(jtrk);
+             }
+           }
+        }
+      }
+    }
+
   //mark primary vertices with at least one TOF or BEMC matched track
   map<UInt_t, Bool_t> vtxMap;
   //vertex map loop
@@ -297,17 +461,17 @@ Int_t StUPCFilterMaker::Make()
   }//vertex map loop
 
   //vertex loop
-  for(UInt_t ivtx=0; ivtx<mMuDst->numberOfPrimaryVertices(); ivtx++) {
+     for(UInt_t ivtx=0; ivtx<mMuDst->numberOfPrimaryVertices(); ivtx++) {
     //select only vertices with at least one matched track
     //only in data or embedding MC
-    if( mIsMC != 1 && vtxMap[ivtx] == kFALSE ) continue;
+   if( mIsMC != 1 && vtxMap[ivtx] == kFALSE ) continue;
 
     //static call to set current primary vertex
     StMuDst::setVertexIndex(ivtx);
 
     //get array of primary tracks
-    TObjArray *trkArray = mMuDst->primaryTracks();
-    if( !trkArray ) continue;
+   TObjArray *trkArray = mMuDst->primaryTracks();
+   if( !trkArray ) continue;
 
     Int_t nSelTracks = 0; //number of tracks selected to write to output UPC event
 
@@ -342,8 +506,10 @@ Int_t StUPCFilterMaker::Make()
         origin.SetX(track->globalTrack()->helix().origin().x());
         origin.SetY(track->globalTrack()->helix().origin().y());
         origin.SetZ(track->globalTrack()->helix().origin().z());
-        upcTrack->setCurvatureDipAnglePhase(track->globalTrack()->helix().curvature(), track->globalTrack()->helix().dipAngle(), track->globalTrack()->helix().phase() );
+        upcTrack->setCurvatureDipAnglePhase(track->globalTrack()->helix().curvature(), 
+        track->globalTrack()->helix().dipAngle(), track->globalTrack()->helix().phase() );
       }
+
       upcTrack->setOrigin(origin);
       upcTrack->setDcaXY( track->dcaGlobal().perp() );
       upcTrack->setDcaZ( track->dcaGlobal().z() );
@@ -394,7 +560,6 @@ Int_t StUPCFilterMaker::Make()
     upcVtx->setNPrimaryTracks( trkArray->GetEntriesFast() );
     upcVtx->setNTracksUsed( mMuDst->primaryVertex()->nTracksUsed() );
     upcVtx->setId( ivtx );
-
   }//vertex loop
 
 

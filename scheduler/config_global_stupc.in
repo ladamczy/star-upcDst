@@ -1,21 +1,24 @@
-# Roman Pots run 17, data by Tomas
 
-#common outputs
-
-top  /gpfs01/star/pwg/adamczyk/picoUPC
-
-#set for local running
-submit  local
+#upcDst production configuration
 make_RP_event  1
-add_input  MuDST txt/MuDstList.list
-//add_input KK txt/exclK0K0.list
-//add_input  K0K0 txt/exclK0K0.list
+#main directory for production outputs
+top  /gpfs01/star/pwg/adamczyk/picoUPC
+#add inputs, could be catalog query or filelist (full path for filelist and should end with .list)
+#add_input   r10       production=P10ik,trgsetupname=AuAu200_production,filetype=daq_reco_MuDst,filename~st_upc,storage=local
+#add_input   r11       production=P11id,trgsetupname=AuAu200_production_2011,filetype=daq_reco_MuDst,filename~st_upc,storage=local
+#add_input   r14_prod  production=P16id,trgsetupname=AuAu_200_production_2014,filetype=daq_reco_MuDst,filename~st_upc,storage=local
+#add_input   r14_low   production=P16id,trgsetupname=AuAu_200_production_low_2014,filetype=daq_reco_MuDst,filename~st_upc,storage=local
+#add_input   r14_mid   production=P16id,trgsetupname=AuAu_200_production_mid_2014,filetype=daq_reco_MuDst,filename~st_upc,storage=local
+#add_input   r14_high  production=P16id,trgsetupname=AuAu_200_production_high_2014,filetype=daq_reco_MuDst,filename~st_upc,storage=local
+#add_input   r16_dAu   /gpfs01/star/pwg/ztu/star-upcDst/txt/dAu200_MuDst_file_4.list   # filelist by Kong
+add_input  MuDSTnewnew /star/u/adamczyk/star-upcDst/txt/MuDstList.list
 
+#data/MC
 is_mc  0  # 0 - data,  1 - starsim MC,  2 - embedding MC
 
-#write RP data
-
-
+#set trigger IDs and run range for each ID
+#add_trigger   450705  15084051  15167014    # UPCJpsiB, Run14 AuAu, 1st id
+#add_trigger   450725  15153036  15167007    # UPCJpsiB, Run14 AuAu, 2nd id
 #RP triggers
 add_trigger   570702	 18062044	18083025 	# RP_UPC	rp #events = 10 M
 add_trigger   570712	 18083026	18149030 	# RP_UPC	rp #events = 39 M
@@ -42,9 +45,6 @@ add_trigger   8	18067073	18067086   # RP_IT_PREPOST	rp #events = 861 K
 add_trigger   9	18055033	18055054   # RP_ET	rp #events =  874 K
 add_trigger   9	18067073 18067086   # RP_JP2_PREPOST	rp #events = 393 K
 
-
-
-
 #BEMC clustering
 bemc_cluster_param        1  #  use BEMC cluster conditions below if set to '1'
 bemc_size_max             4
@@ -53,12 +53,17 @@ bemc_energy_add           0.001
 bemc_energy_threshold_all 0.1
 
 #directory for merged outputs, relative to top
-#outdir   merge_files
+outdir   merge
 
 #name for merged outputs
-outfile  StUPCRP_production_old.root
+outfile  StUPC_production_new.root
 
 #list of output files
-#outlist  StUPCRP_production.list
+outlist  StUPC_global_v1.list
+
+
+
+
+
 
 

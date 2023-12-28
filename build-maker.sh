@@ -5,7 +5,7 @@ INC="include"
 DEST="StRoot/StUPCFilterMaker"
 
 srclist=( StUPCBemcCluster StUPCEvent StUPCFilterMaker StUPCFilterBemcUtil StUPCFilterTrgUtil
-StUPCTrack StUPCVertex StUPCTofHit
+StUPCTrack StUPCVertex StUPCTofHit StUPCV0
 StRPEvent StUPCRpsTrack StUPCRpsTrackPoint StUPCRpsCluster StUPCFilterRPUtil )
 
 mkdir -p $DEST
@@ -20,7 +20,7 @@ done
 
 #TOF calib maker with start time override
 cvs co StRoot/StBTofCalibMaker
-
+#cvs co StRoot/StPicoEvent/
 cons
 
 
