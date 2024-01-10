@@ -157,7 +157,7 @@ Int_t StUPCFilterMaker::Init() {
 Int_t StUPCFilterMaker::Make()
 {
   //called for each event
-
+  cout << " begin event make " << endl; 
   mUPCEvent->clearEvent(); //clear the output UPC event
   mBemcUtil->clear(); //clear data structures in BEMC util
   if( mRPUtil ) mRPUtil->clear(); // clear data structures in RP util
@@ -191,6 +191,8 @@ Int_t StUPCFilterMaker::Make()
   //trigger
   const StTriggerId trgId = evt->triggerIdCollection().nominal();
   Int_t runnum = evt->runNumber();
+
+  cout << " run number  event	make " << runnum << endl;
 
   Bool_t isTrg = kFALSE; //determine whether at least one of trigger IDs was fired
   for(UInt_t i=0; i<mTrgIDs.size(); i++) {
@@ -274,7 +276,7 @@ Int_t StUPCFilterMaker::Make()
   std::vector<int> globalList;
 
   TObjArray *trkArray = mMuDst->globalTracks();
-
+    cout << " before global tracks " << endl;
     for(Int_t itrk=0; itrk<trkArray->GetEntriesFast(); itrk++) {
       StMuTrack *track1 = dynamic_cast<StMuTrack*>( trkArray->At(itrk) );
       if( !track1 ) continue;
@@ -299,28 +301,29 @@ Int_t StUPCFilterMaker::Make()
         if ( track1->charge()+track2->charge() != 0 ) continue;
         if ( track2->nHits()<15 ) continue;
 
+        cout << " before K0L " << endl;
         // check if pair is K0 
         StUPCV0 K0L(track1,track2, massPion, massPion,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), true); 
-//        std::cout << "linear " << K0.dcaDaughters() << " " << K0.DCABeamLine() << " " << K0.pointingAngleHypo() << std::endl;
-        if ( K0L.dcaDaughters() > 150. ) continue;
+        std::cout << "linear " << K0L.dcaDaughters() << " " << K0L.DCABeamLine() << " " << K0L.pointingAngleHypo() << std::endl;
+        if ( K0L.dcaDaughters() > 100. ) continue;
         bool V0Candidate = false;
         StUPCV0 K0(track1,track2, massPion, massPion,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), false);
 //        std::cout << "helix " << K0.dcaDaughters() << " " << K0.DCABeamLine() << " " << K0.pointingAngleHypo()	<< std::endl;
      
-        if ( K0.dcaDaughters() < 1.5 && K0.DCABeamLine() < 1.5 && K0.pointingAngleHypo()>0.925) {
+        if ( K0.dcaDaughters() < 2.0 && K0.DCABeamLine() < 2.0 && (K0.pointingAngleHypo()>0.9 || K0.decayLengthHypo()<3.0) ) {
             if ( abs(K0.m()-0.495) < 0.035 ) { 
 //                std::cout << "K0 " << K0.decayLengthHypo() <<  std::endl;
                 V0Candidate = true;
             }
         // check if pair is Lambda/LambdaBar
         StUPCV0 L01(track1,track2, massPion, massProton,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), false);
-       	    if ( abs(L01.m()-1.115) < 0.035 ) { 
+       	    if ( abs(L01.m()-1.115) < 0.015 ) { 
 //              std::cout << "L01 " << L01.decayLengthHypo() <<  std::endl;
                 V0Candidate = true;
             }
         // check if pair is LambdaBar/Lambda
         StUPCV0 L02(track1,track2, massProton, massPion,itrk,jtrk, vertex, beamline, evtSummary.magneticField(), false);
-            if ( abs(L02.m()-1.115) < 0.035 ) {
+            if ( abs(L02.m()-1.115) < 0.015 ) {
 //              std::cout << "L02 " << L02.decayLengthHypo() <<  std::endl;
                 V0Candidate = true;
             }
@@ -329,7 +332,8 @@ Int_t StUPCFilterMaker::Make()
 //                        << bool(std::find(globalList.begin(), globalList.end(), itrk) == globalList.end()) << " " 
 //                        << bool(std::find(globalList.begin(), globalList.end(), jtrk) == globalList.end()) << std::endl;
 
-             if(track1->primaryTrack()==0 && std::find(globalList.begin(), globalList.end(), itrk) == globalList.end()) {
+//             if(track1->primaryTrack()==0 && std::find(globalList.begin(), globalList.end(), itrk) == globalList.end()) {
+             if(std::find(globalList.begin(), globalList.end(), itrk) == globalList.end()) {
               StUPCTrack *upcTrack = mUPCEvent->addTrack();
               upcTrack->setPtEtaPhi(track1->pt(), track1->eta(), track1->phi());
               upcTrack->setCurvatureDipAnglePhase(track1->helix().curvature(),track1->helix().dipAngle(),track1->helix().phase());
@@ -375,7 +379,8 @@ Int_t StUPCFilterMaker::Make()
               }
               globalList.push_back(itrk);
              }
-             if(track2->primaryTrack()==0 && std::find(globalList.begin(), globalList.end(), jtrk) == globalList.end()) {
+//             if(track2->primaryTrack()==0 && std::find(globalList.begin(), globalList.end(), jtrk) == globalList.end()) {
+             if( std::find(globalList.begin(), globalList.end(), jtrk) == globalList.end()) {
               StUPCTrack *upcTrack = mUPCEvent->addTrack();
               upcTrack->setPtEtaPhi(track2->pt(), track2->eta(), track2->phi());
               upcTrack->setCurvatureDipAnglePhase(track2->helix().curvature(),track2->helix().dipAngle(),track2->helix().phase());
@@ -589,6 +594,7 @@ Int_t StUPCFilterMaker::Make()
   mCounter->Fill( kWritten ); // events written to output tree
   mUPCTree->Fill();
 
+  cout << " end event make " << endl;
   return kStOk;
 
 }//Make

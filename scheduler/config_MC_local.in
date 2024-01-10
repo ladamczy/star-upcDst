@@ -9,7 +9,8 @@ submit  local
 make_RP_event  1
 #input from local filelist
 #add_input  L_L_vanek  txt/fileList_Run17_L_L.list   #  coherent J/psi embedding
-add_input  LLBar txt/exclLLBar.list
+#add_input  LLBar txt/exclLLBar.list
+add_input FAILED txt/failed.list 
 #add_input  K0K0 txt/exclK0K0_starsim.list
 #number of files to process from the list of files, comment-out to process all
 #nfiles  1
