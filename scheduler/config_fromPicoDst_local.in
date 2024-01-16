@@ -3,9 +3,9 @@
 
 macro RunFromPicoDst.C
 
-top /star/u/jaroslav/test/picodst_read/prod
+top /gpfs01/star/pwg/adamczyk/picoUPC
 
-add_input test_picodst /star/u/jaroslav/star-upcDst/scheduler/test_picodst_local.list
+add_input test_picodst /star/u/adamczyk/star-upcDst/scheduler/pico2.list
 
 submit local
 
