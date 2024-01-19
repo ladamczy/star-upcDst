@@ -5,9 +5,9 @@ macro RunFromPicoDst.C
 
 top /gpfs01/star/pwg/adamczyk/picoUPC
 
-add_input test_picodst /star/u/adamczyk/star-upcDst/scheduler/pico2.list
+add_input test5_picodst /star/u/adamczyk/star-upcDst/scheduler/pico_K0K0.list
 
-submit local
+#submit local
 
 outfile out.root
 

@@ -53,10 +53,13 @@ StUPCV0::StUPCV0(StPicoTrack const * const particle1, StPicoTrack const * const 
                                                      particle2->helix(bField).phase(), 
                                                      origin2,
                                                      particle2->charge() );
+/*
+  StPicoPhysicalHelix p1Helix = particle1->helix(bField); 
+  StPicoPhysicalHelix p2Helix = particle2->helix(bField);
 
   p1Helix.moveOrigin(p1Helix.pathLength(vtx,false));
   p2Helix.moveOrigin(p2Helix.pathLength(vtx,false));
-
+*/
 // -- use straight lines approximation to get point of DCA of particle1-particle2 pair
 // bField is in kilogauss
 
