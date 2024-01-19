@@ -271,7 +271,15 @@ Int_t StUPCFilterMaker::Make()
   double massPion = 0.13957061;
   double massKaon =  0.497611;
   double massProton = 0.93827;   
+
+
   TVector3 vertex(0,0,0);
+  if ( mMuDst->numberOfPrimaryVertices() > 0 ) {
+   StMuDst::setVertexIndex(0);
+   vertex.SetX(evt->primaryVertexPosition().x());
+   vertex.SetY(evt->primaryVertexPosition().y());
+   vertex.SetZ(evt->primaryVertexPosition().z());
+  }
   double beamline[4] = {0, 0, 0, 0};
   std::vector<int> globalList;
 

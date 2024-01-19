@@ -85,8 +85,8 @@ StUPCV0::StUPCV0(StMuTrack const * const particle1, StMuTrack const * const part
                                                      origin2,
                                                      particle2->charge() );
 
-  p1Helix.moveOrigin(p1Helix.pathLength(vtx,false));
-  p2Helix.moveOrigin(p2Helix.pathLength(vtx,false));
+  p1Helix.moveOrigin(p1Helix.pathLength(vtx));
+  p2Helix.moveOrigin(p2Helix.pathLength(vtx));
 
 // -- use straight lines approximation to get point of DCA of particle1-particle2 pair
 // bField is in kilogauss
