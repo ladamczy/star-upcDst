@@ -39,6 +39,10 @@ class StUPCMakerFromPicoDst: public StMaker {
   StUPCEvent *mUPCEvent; // output UPC event
   TTree *mUPCTree; // output tree
 
+  Int_t mRunNumber;
+  Int_t mEventNumber;
+  Int_t mFillNumber;
+
   StUPCSelectV0 *mSelectV0; // selector for tracks from V0 candidates
 
   ClassDef(StUPCMakerFromPicoDst, 1);

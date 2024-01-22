@@ -56,6 +56,9 @@ Int_t StUPCMakerFromPicoDst::Init() {
   mUPCTree = new TTree("mUPCTree", "mUPCTree");
   //add branch with event object
   mUPCTree->Branch("mUPCEvent", &mUPCEvent);
+  mUPCTree->Branch("Run", &mRunNumber);
+  mUPCTree->Branch("Event", &mEventNumber);
+  mUPCTree->Branch("Fill", &mFillNumber);
 
   //counter histograms
   mHistList = new TList();
@@ -84,8 +87,12 @@ Int_t StUPCMakerFromPicoDst::Make() {
   mCounter->Fill( kAna ); // analyzed events
 
   //run number and event number
-  mUPCEvent->setRunNumber( mPicoDst->event()->runId() );
-  mUPCEvent->setEventNumber( mPicoDst->event()->eventId() );
+//  mUPCEvent->setRunNumber( mPicoDst->event()->runId() );
+//  mUPCEvent->setEventNumber( mPicoDst->event()->eventId() );
+  
+  mRunNumber = mPicoDst->event()->runId();
+  mEventNumber = mPicoDst->event()->eventId();
+  mFillNumber = mPicoDst->event()->fillId();
 
   //tracks in event
   UInt_t nTracks = mPicoDst->numberOfTracks();
@@ -142,6 +149,8 @@ Int_t StUPCMakerFromPicoDst::Finish() {
 
   //write the output file
   mOutFile->cd();
+
+  mUPCTree->BuildIndex("Run","Event");
 
   mUPCTree->Write();
   mHistList->Write("HistList", TObject::kSingleKey);
