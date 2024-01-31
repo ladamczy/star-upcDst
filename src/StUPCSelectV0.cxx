@@ -79,17 +79,17 @@ int StUPCSelectV0::selectTracks(StPicoDst *pd, std::vector<bool>& sel) {
           if ( !(K0.dcaDaughters() < 2.0 && K0.DCABeamLine() < 2.0 && (K0.pointingAngleHypo()>0.9 || K0.decayLengthHypo()<3.0) ) )
             continue;
 
-          if ( abs(K0.m()-0.495) < 0.035 ) // it's a K0
+          if ( abs(K0.m()-0.495) < 0.045 ) // it's a K0
             V0Candidate = true;
 
           // check if pair is Lambda/LambdaBar
           StUPCV0 L01(track1,track2, massPion, massProton, vertex, beamline, pd->event()->bField(), false);
-          if ( abs(L01.m()-1.115) < 0.015 ) // it's a Lambda/LambdaBar
+          if ( abs(L01.m()-1.115) < 0.017 ) // it's a Lambda/LambdaBar
             V0Candidate = true;
 
           // check if pair is LambdaBar/Lambda
           StUPCV0 L02(track1,track2, massProton, massPion, vertex, beamline, pd->event()->bField(), false);
-          if ( abs(L02.m()-1.115) < 0.015 ) // it's a LambdaBar/Lambda
+          if ( abs(L02.m()-1.115) < 0.017 ) // it's a LambdaBar/Lambda
             V0Candidate = true;
 
           if ( !V0Candidate ) // it is not a V0 canidate, discard the pair

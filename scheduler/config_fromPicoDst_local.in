@@ -5,7 +5,8 @@ macro RunFromPicoDst.C
 
 top /gpfs01/star/pwg/adamczyk/picoUPC
 
-add_input test9_picodst /star/u/adamczyk/star-upcDst/scheduler/pico_K0K0.list
+#add_input test9_picodst /star/u/adamczyk/star-upcDst/scheduler/pico_K0K0.list
+add_input picoUPC  production=P20ic,trgsetupname=pp500_production_2017,filetype=daq_reco_picoDst,filename~st_rp,storage!=hpps
 
 #submit local
 
