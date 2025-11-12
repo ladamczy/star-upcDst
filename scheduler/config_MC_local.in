@@ -2,16 +2,16 @@
 #upcDst local test production without scheduler
 
 #main directory for production outputs
-top  /gpfs01/star/pwg/jaroslav/test/star-upcDst/trees/MC
+top  /gpfs01/star/pwg/adamczyk/simulationPIPI/upcDst
 
 #set for local running
 submit  local
 
 #input from local filelist
-add_input  slight14e4x1  /star/u/jaroslav/star-upc/txt/sim_slight14e4x1.list  #  coherent J/psi embedding
+add_input  dimepipi  /gpfs01/star/pwg/adamczyk/simulationPIPI/list.txt  #  exclusive pipi
 
 #number of files to process from the list of files, comment-out to process all
-#nfiles  1
+nfiles  1
 
 #data/MC
 is_mc  2  # 0 - data,  1 - starsim MC,  2 - embedding MC
@@ -20,7 +20,7 @@ is_mc  2  # 0 - data,  1 - starsim MC,  2 - embedding MC
 tof_start_zero  1
 
 #name for output file
-outfile  StUPC_slight14e4x1_v5.root
+outfile  StUPC_dime_pipi_v1.root
 
 #set trigger IDs and run range for each ID (not applied with MC)
 add_trigger   450705  15084051  15167014    # UPCJpsiB, Run14 AuAu, 1st id
@@ -34,13 +34,6 @@ bemc_size_max             4
 bemc_energy_seed          0.3
 bemc_energy_add           0.001
 bemc_energy_threshold_all 0.1
-
-
-
-
-
-
-
 
 
 
