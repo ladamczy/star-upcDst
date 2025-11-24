@@ -7,6 +7,8 @@ top  /gpfs01/star/pwg/adamczyk/simulationPIPI/upcDst
 #set for local running
 submit  local
 
+star_version SL21c
+
 #input from local filelist
 add_input  dimepipi  /gpfs01/star/pwg/adamczyk/simulationPIPI/list.txt  #  exclusive pipi
 
