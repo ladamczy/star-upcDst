@@ -10,7 +10,7 @@ submit  local
 star_version SL21c
 
 #input from local filelist
-add_input  dimepipi  /gpfs01/star/pwg/adamczyk/simulationPIPI/list.txt  #  exclusive pipi
+add_input  dimepipi  /gpfs01/star/pwg/adamczyk/simulationPIPI/list.lis  #  exclusive pipi
 
 #number of files to process from the list of files, comment-out to process all
 nfiles  1
