@@ -91,7 +91,7 @@ void RunFilterMaker(string filelist, Int_t nFiles, string outfile, string config
   //----------------------------------------------------------------------
 
   //no debug printouts
-  StMuDebug::setLevel(1);
+  StMuDebug::setLevel(0);
 
   //show input and output for the maker
   cout << "RunFilterMaker, filelist: " << filelist << endl;
