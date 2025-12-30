@@ -472,6 +472,8 @@ Bool_t StUPCFilterMaker::runMC() {
     part->SetProductionVertex(vxyz.x(), vxyz.y(), vxyz.z(), 0.);
     //set original vertex id
     part->SetFirstMother(mcTrk->IdVx());
+    part->SetFirstDaughter(mcTrk->IdVxEnd());
+
 
   }//mc tracks loop
 
